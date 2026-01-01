@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct UsersView: View {
-    let users = User.mockUsers
+    @State private var viewModel = UsersViewModel()
 
     var body: some View {
         List {
-            ForEach(users) { user in
+            ForEach(viewModel.users) { user in
                 HStack(spacing: 16) {
                     Text("\(user.id)")
 
