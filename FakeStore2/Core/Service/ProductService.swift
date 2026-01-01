@@ -7,8 +7,24 @@
 
 import Foundation
 
-struct ProductService {
+protocol ProductServiceProtocol {
+    func fetchProducts() async throws -> [Product]
+}
+
+struct ProductService: ProductServiceProtocol {
     func fetchProducts() async throws -> [Product] {
         return Product.mockProducts
     }
 }
+
+struct MockProductService: ProductServiceProtocol {
+    func fetchProducts() async throws -> [Product] {
+        return Product.mockProducts
+    }
+    
+
+}
+
+
+// When not using a protocol we use conrecte type, it's not flexible and not very testable.
+// Using a protocol give us the power to use Abstract type (abstraction) we can now use Mock to test.

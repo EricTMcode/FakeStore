@@ -11,9 +11,9 @@ import Foundation
 class ProductsViewModel {
     var products = [Product]()
 
-    private let service: ProductService
+    private let service: ProductServiceProtocol
 
-    init(service: ProductService = ProductService()) {
+    init(service: ProductServiceProtocol = ProductService()) {
         self.service = service
     }
 
