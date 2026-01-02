@@ -15,9 +15,11 @@ struct ProductService: ProductServiceProtocol {
     private let URLString = "https://fakestoreapi.com/products"
     private let cache = ProductsCache()
     private let refreshInterval: TimeInterval = 60 * 10 // 10 minutes
+    private let downloader: HTTPDataDownloaderProtocol
     private var lastFetchedTime: Date?
 
-    init() {
+    init(downloader: HTTPDataDownloaderProtocol = HTTPDataDownloader()) {
+        self.downloader = downloader
         getLastFetchedTime()
     }
 
@@ -28,16 +30,8 @@ struct ProductService: ProductServiceProtocol {
         }
 
         print("DEBUG: Getting products from API")
-        guard let url = URL(string: URLString) else {
-            throw APIError.invalidURL
-        }
-
-        let (data, response) = try await URLSession.shared.data(from: url)
-        try validataResponse(response)
-
+        let products = try await downloader.fetchData(as: Product.self, from: .products)
         saveLastFetchedTime()
-
-        let products = try JSONDecoder().decode([Product].self, from: data)
         cache.saveProducts(products)
 
         return products
@@ -49,16 +43,6 @@ struct ProductService: ProductServiceProtocol {
 
     private mutating func getLastFetchedTime() {
         self.lastFetchedTime = UserDefaults.standard.value(forKey: "lastFetchedTime") as? Date
-    }
-
-    private func validataResponse(_ response: URLResponse) throws {
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw APIError.invalidResponse
-        }
-
-        guard httpResponse.statusCode == 200 else {
-            throw APIError.invalidResponse
-        }
     }
 
     private var needsRefresh: Bool {

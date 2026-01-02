@@ -9,9 +9,19 @@ import Foundation
 
 @Observable
 class UsersViewModel {
-    var users = [User]()
+    var loadingState: ContentLoadingState<User> = .loading
+    private let service: UserServiceProtocol
 
-    init() {
-        self.users = User.mockUsers
+    init(service: UserServiceProtocol = UserService()) {
+        self.service = service
+    }
+
+    func fetchUsers() async {
+        do {
+            let users = try await service.fetchUsers()
+            self.loadingState = users.isEmpty ? .empty : .completed(data: users)
+        } catch {
+            self.loadingState = .error(error: error)
+        }
     }
 }
