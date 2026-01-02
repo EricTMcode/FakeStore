@@ -9,9 +9,7 @@ import Foundation
 
 @Observable
 class ProductsViewModel {
-    var products = [Product]()
-    var isLoading = false
-    var error: Error?
+    var loadingState: ContentLoadingState<Product> = .loading
 
     private let service: ProductServiceProtocol
 
@@ -20,14 +18,11 @@ class ProductsViewModel {
     }
 
     func fetchProducts() async {
-        isLoading = true
-
-        defer { isLoading = false }
-        
         do {
-            self.products = try await service.fetchProducts()
+            let products = try await service.fetchProducts()
+            self.loadingState = products.isEmpty ? .empty : .completed(data: products)
         } catch {
-            self.error = error
+            self.loadingState = .error(error: error)
         }
     }
 }

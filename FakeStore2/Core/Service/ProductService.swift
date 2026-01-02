@@ -14,8 +14,8 @@ protocol ProductServiceProtocol {
 struct ProductService: ProductServiceProtocol {
     func fetchProducts() async throws -> [Product] {
         try await Task.sleep(for: .seconds(2))
-        throw URLError(.badServerResponse)
-//        return Product.mockProducts
+//        throw URLError(.badServerResponse)
+        return Product.mockProducts
     }
 }
 

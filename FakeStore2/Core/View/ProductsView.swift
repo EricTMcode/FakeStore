@@ -9,25 +9,28 @@ import SwiftUI
 
 struct ProductsView: View {
     @State private var viewModel = ProductsViewModel()
-
+    
     var body: some View {
         Group {
-            if viewModel.isLoading {
+            switch viewModel.loadingState {
+            case .loading:
                 ProgressView()
-            } else if let error = viewModel.error {
-                Text("Error: \(error.localizedDescription)")
-            } else {
+            case .empty:
+                ContentUnavailableView("No Products", systemImage: "cart.slash")
+            case .error(let error):
+                Text(error.localizedDescription)
+            case .completed(let products):
                 List {
-                    ForEach(viewModel.products) { product in
+                    ForEach(products) { product in
                         HStack(spacing: 16) {
                             AsyncImage(url: URL(string: product.image))
                                 .scaledToFill()
                                 .frame(width: 80, height: 80)
                                 .clipShape(.rect(cornerRadius: 10))
-
+                            
                             VStack(alignment: .leading) {
                                 Text(product.title)
-
+                                
                                 Text(product.description)
                                     .foregroundStyle(.gray)
                                     .lineLimit(2)
