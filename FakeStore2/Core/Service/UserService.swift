@@ -24,10 +24,6 @@ struct UserService: UserServiceProtocol {
 
     func fetchUsers() async throws -> [User] {
         print("DEBUG: Getting users from API")
-        guard let url = URL(string: URLString) else {
-            throw APIError.invalidURL
-        }
-
         let users = try await downloader.fetchData(as: User.self, from: .users)
         saveLastFetchedTime()
 

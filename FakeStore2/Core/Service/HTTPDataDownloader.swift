@@ -28,7 +28,7 @@ enum FakeStoreAPIEndpoint {
 struct HTTPDataDownloader: HTTPDataDownloaderProtocol {
     private let baseURL = "https://fakestoreapi.com"
 
-    func fetchData<T: Decodable>(as type: T.Type, from endpoint: FakeStoreAPIEndpoint) async throws -> [T] {
+    func fetchData<T: Codable>(as type: T.Type, from endpoint: FakeStoreAPIEndpoint) async throws -> [T] {
         let url = try buildURL(endpoint: endpoint)
         let (data, response) = try await URLSession.shared.data(from: url)
         try validataResponse(response)
