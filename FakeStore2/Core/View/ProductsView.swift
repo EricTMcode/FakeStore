@@ -14,6 +14,8 @@ struct ProductsView: View {
         Group {
             if viewModel.isLoading {
                 ProgressView()
+            } else if let error = viewModel.error {
+                Text("Error: \(error.localizedDescription)")
             } else {
                 List {
                     ForEach(viewModel.products) { product in

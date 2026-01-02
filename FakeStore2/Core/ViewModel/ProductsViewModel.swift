@@ -11,6 +11,7 @@ import Foundation
 class ProductsViewModel {
     var products = [Product]()
     var isLoading = false
+    var error: Error?
 
     private let service: ProductServiceProtocol
 
@@ -26,7 +27,7 @@ class ProductsViewModel {
         do {
             self.products = try await service.fetchProducts()
         } catch {
-            // Handle Error...
+            self.error = error
         }
     }
 }
