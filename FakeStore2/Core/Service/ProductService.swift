@@ -13,7 +13,7 @@ protocol ProductServiceProtocol {
 
 struct ProductService: ProductServiceProtocol {
     private let URLString = "https://fakestoreapi.com/products"
-    private let cache = ProductsCache()
+    private let cache = CacheManager(filename: "products.json")
     private let refreshInterval: TimeInterval = 60 * 10 // 10 minutes
     private let downloader: HTTPDataDownloaderProtocol
     private var lastFetchedTime: Date?
@@ -24,15 +24,15 @@ struct ProductService: ProductServiceProtocol {
     }
 
     func fetchProducts() async throws -> [Product] {
-        if !needsRefresh, let cachedProducts = try cache.getProducts() {
+        if !needsRefresh {
             print("DEBUG: Getting products from CACHE")
-            return cachedProducts
+            return try cache.getData(as: Product.self)
         }
 
         print("DEBUG: Getting products from API")
         let products = try await downloader.fetchData(as: Product.self, from: .products)
         saveLastFetchedTime()
-        cache.saveProducts(products)
+        cache.saveData(products)
 
         return products
     }
