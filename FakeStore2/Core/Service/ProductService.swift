@@ -12,10 +12,27 @@ protocol ProductServiceProtocol {
 }
 
 struct ProductService: ProductServiceProtocol {
+    private let URLString = "https://fakestoreapi.com/products"
+
     func fetchProducts() async throws -> [Product] {
-        try await Task.sleep(for: .seconds(2))
-//        throw URLError(.badServerResponse)
-        return Product.mockProducts
+        guard let url = URL(string: URLString) else {
+            throw URLError(.badURL)
+        }
+
+        let (data, response) = try await URLSession.shared.data(from: url)
+
+        try validataResponse(response)
+        return try JSONDecoder().decode([Product].self, from: data)
+    }
+
+    private func validataResponse(_ response: URLResponse) throws {
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
+        }
+
+        guard httpResponse.statusCode == 200 else {
+            throw URLError(.badServerResponse)
+        }
     }
 }
 
