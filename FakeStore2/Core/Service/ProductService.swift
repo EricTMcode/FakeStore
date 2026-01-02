@@ -16,22 +16,23 @@ struct ProductService: ProductServiceProtocol {
 
     func fetchProducts() async throws -> [Product] {
         guard let url = URL(string: URLString) else {
-            throw URLError(.badURL)
+            throw APIError.invalidURL
         }
 
         let (data, response) = try await URLSession.shared.data(from: url)
 
         try validataResponse(response)
+
         return try JSONDecoder().decode([Product].self, from: data)
     }
 
     private func validataResponse(_ response: URLResponse) throws {
         guard let httpResponse = response as? HTTPURLResponse else {
-            throw URLError(.badServerResponse)
+            throw APIError.invalidResponse
         }
 
         guard httpResponse.statusCode == 200 else {
-            throw URLError(.badServerResponse)
+            throw APIError.invalidResponse
         }
     }
 }
@@ -40,8 +41,6 @@ struct MockProductService: ProductServiceProtocol {
     func fetchProducts() async throws -> [Product] {
         return Product.mockProducts
     }
-    
-
 }
 
 
