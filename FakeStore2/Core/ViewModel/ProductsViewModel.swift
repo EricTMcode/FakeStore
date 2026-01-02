@@ -10,6 +10,7 @@ import Foundation
 @Observable
 class ProductsViewModel {
     var products = [Product]()
+    var isLoading = false
 
     private let service: ProductServiceProtocol
 
@@ -18,6 +19,10 @@ class ProductsViewModel {
     }
 
     func fetchProducts() async {
+        isLoading = true
+
+        defer { isLoading = false }
+        
         do {
             self.products = try await service.fetchProducts()
         } catch {

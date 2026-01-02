@@ -13,6 +13,7 @@ protocol ProductServiceProtocol {
 
 struct ProductService: ProductServiceProtocol {
     func fetchProducts() async throws -> [Product] {
+        try await Task.sleep(for: .seconds(4))
         return Product.mockProducts
     }
 }
@@ -26,5 +27,5 @@ struct MockProductService: ProductServiceProtocol {
 }
 
 
-// When not using a protocol we use conrecte type, it's not flexible and not very testable.
+// When not using a protocol we use conrecte type, it's not f lexible and not very testable.
 // Using a protocol give us the power to use Abstract type (abstraction) we can now use Mock to test.
