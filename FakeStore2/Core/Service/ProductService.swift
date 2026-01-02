@@ -13,8 +13,15 @@ protocol ProductServiceProtocol {
 
 struct ProductService: ProductServiceProtocol {
     private let URLString = "https://fakestoreapi.com/products"
+    private let cache = ProductsCache()
 
     func fetchProducts() async throws -> [Product] {
+        if let cachedProducts = try cache.getProducts() {
+            print("DEBUG: Getting products from CACHE")
+            return cachedProducts
+        }
+
+        print("DEBUG: Getting products from API")
         guard let url = URL(string: URLString) else {
             throw APIError.invalidURL
         }
@@ -23,7 +30,9 @@ struct ProductService: ProductServiceProtocol {
 
         try validataResponse(response)
 
-        return try JSONDecoder().decode([Product].self, from: data)
+        let products = try JSONDecoder().decode([Product].self, from: data)
+        cache.saveProducts(products)
+        return products
     }
 
     private func validataResponse(_ response: URLResponse) throws {
