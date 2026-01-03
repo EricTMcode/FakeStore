@@ -8,7 +8,7 @@
 import Foundation
 
 protocol HTTPDataDownloaderProtocol {
-    func fetchData<T: Codable>(as type: T.Type, from endpoint: FakeStoreAPIEndpoint) async throws -> [T]
+    func fetchData<T: Codable>(as type: T.Type) async throws -> [T]
 }
 
 enum FakeStoreAPIEndpoint {
@@ -27,9 +27,24 @@ enum FakeStoreAPIEndpoint {
 
 struct HTTPDataDownloader: HTTPDataDownloaderProtocol {
     private let baseURL = "https://fakestoreapi.com"
+    private let cache: CacheManager?
+    private let endpoint: FakeStoreAPIEndpoint
+    private var lastFetchedTime: Date?
+    private let refreshInterval: TimeInterval = 60 * 10 // 10 minutes
 
-    func fetchData<T: Codable>(as type: T.Type, from endpoint: FakeStoreAPIEndpoint) async throws -> [T] {
-        let url = try buildURL(endpoint: endpoint)
+    init(endpoint: FakeStoreAPIEndpoint, cache: CacheManager? = nil) {
+        self.endpoint = endpoint
+        self.cache = cache
+    }
+
+    func fetchData<T: Codable>(as type: T.Type) async throws -> [T] {
+        if !needsRefresh, let cache {
+            print("DEBUG: Got data from cache...")
+            return try cache.getData(as: type)
+        }
+
+        print("DEBUG: Getting data from API...")
+        let url = try buildURL()
         let (data, response) = try await URLSession.shared.data(from: url)
         try validataResponse(response)
 
@@ -37,7 +52,22 @@ struct HTTPDataDownloader: HTTPDataDownloaderProtocol {
         return result
     }
 
-    private func buildURL(endpoint: FakeStoreAPIEndpoint) throws -> URL {
+    private func saveLastFetchedTime() {
+        UserDefaults.standard.set(Date(), forKey: "lastFetchedTime")
+    }
+
+    private mutating func getLastFetchedTime() {
+        self.lastFetchedTime = UserDefaults.standard.value(forKey: "lastFetchedTime") as? Date
+    }
+
+    private var needsRefresh: Bool {
+        guard let lastFetchedTime else { return true }
+        print("DEBUG: Last fetched time \(lastFetchedTime)")
+        print("DEBUG: Time since \(Date().timeIntervalSince(lastFetchedTime))")
+        return Date().timeIntervalSince(lastFetchedTime) >= refreshInterval
+    }
+
+    private func buildURL() throws -> URL {
         guard var components = URLComponents(string: baseURL) else { throw APIError.invalidURL }
         components.path = endpoint.path
 
