@@ -9,9 +9,9 @@ import SwiftUI
 
 struct ProductsView: View {
     @State private var viewModel = ProductsViewModel()
-    
+
     var body: some View {
-        Group {
+        VStack {
             switch viewModel.loadingState {
             case .loading:
                 ProgressView()
@@ -27,10 +27,10 @@ struct ProductsView: View {
                                 .scaledToFill()
                                 .frame(width: 80, height: 80)
                                 .clipShape(.rect(cornerRadius: 10))
-                            
+
                             VStack(alignment: .leading) {
                                 Text(product.title)
-                                
+
                                 Text(product.description)
                                     .foregroundStyle(.gray)
                                     .lineLimit(2)
