@@ -31,10 +31,14 @@ struct HTTPDataDownloader: HTTPDataDownloaderProtocol {
     private let endpoint: FakeStoreAPIEndpoint
     private var lastFetchedTime: Date?
     private let refreshInterval: TimeInterval = 60 * 10 // 10 minutes
+    private let userDefaultLastFetchedTimeKey: String
 
     init(endpoint: FakeStoreAPIEndpoint, cache: CacheManager? = nil) {
         self.endpoint = endpoint
         self.cache = cache
+        self.userDefaultLastFetchedTimeKey = endpoint.path
+
+        getLastFetchedTime()
     }
 
     func fetchData<T: Codable>(as type: T.Type) async throws -> [T] {
@@ -44,20 +48,27 @@ struct HTTPDataDownloader: HTTPDataDownloaderProtocol {
         }
 
         print("DEBUG: Getting data from API...")
+
         let url = try buildURL()
         let (data, response) = try await URLSession.shared.data(from: url)
         try validataResponse(response)
 
         let result = try JSONDecoder().decode([T].self, from: data)
+
+        if let cache {
+            saveLastFetchedTime()
+            cache.saveData(result)
+        }
+
         return result
     }
 
     private func saveLastFetchedTime() {
-        UserDefaults.standard.set(Date(), forKey: "lastFetchedTime")
+        UserDefaults.standard.set(Date(), forKey: userDefaultLastFetchedTimeKey)
     }
 
     private mutating func getLastFetchedTime() {
-        self.lastFetchedTime = UserDefaults.standard.value(forKey: "lastFetchedTime") as? Date
+        self.lastFetchedTime = UserDefaults.standard.value(forKey: userDefaultLastFetchedTimeKey) as? Date
     }
 
     private var needsRefresh: Bool {
@@ -74,7 +85,6 @@ struct HTTPDataDownloader: HTTPDataDownloaderProtocol {
         guard let url = components.url else { throw APIError.invalidURL }
 
         return url
-
     }
 
     private func validataResponse(_ response: URLResponse) throws {

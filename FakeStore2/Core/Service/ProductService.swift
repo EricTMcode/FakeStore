@@ -16,7 +16,6 @@ struct ProductService: ProductServiceProtocol {
 
     init(downloader: HTTPDataDownloaderProtocol = HTTPDataDownloader(endpoint: .products, cache: CacheManager(filename: "products.json"))) {
         self.downloader = downloader
-        getLastFetchedTime()
     }
 
     func fetchProducts() async throws -> [Product] {
