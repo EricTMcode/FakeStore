@@ -14,27 +14,16 @@ protocol UserServiceProtocol {
 
 struct UserService: UserServiceProtocol {
     private let downloader: HTTPDataDownloaderProtocol
-
+    
     init(downloader: HTTPDataDownloaderProtocol = HTTPDataDownloader(endpoint: .users, cache: CacheManager(filename: "users.json"))) {
         self.downloader = downloader
     }
-
+    
     func fetchUsers() async throws -> [User] {
         return try await downloader.fetchData(as: User.self)
     }
-
+    
     func refreshUsers() async throws -> [User] {
         return try await downloader.refreshData(as: User.self)
-    }
-
-}
-
-struct MockUserService: UserServiceProtocol {
-    func refreshUsers() async throws -> [User] {
-        return User.mockUsers
-    }
-    
-    func fetchUsers() async throws -> [User] {
-        return User.mockUsers
     }
 }

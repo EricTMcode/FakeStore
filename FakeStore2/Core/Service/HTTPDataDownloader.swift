@@ -78,4 +78,3 @@ class HTTPDataDownloader: HTTPDataDownloaderProtocol {
         return Date().timeIntervalSince(lastFetchedTime) >= refreshInterval
     }
 }
-

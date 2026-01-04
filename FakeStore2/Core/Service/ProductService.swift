@@ -28,16 +28,5 @@ struct ProductService: ProductServiceProtocol {
     }
 }
 
-struct MockProductService: ProductServiceProtocol {
-    func refreshProducts() async throws -> [Product] {
-        return Product.mockProducts
-    }
-    
-    func fetchProducts() async throws -> [Product] {
-        return Product.mockProducts
-    }
-}
-
-
 // When not using a protocol we use conrecte type, it's not f lexible and not very testable.
 // Using a protocol give us the power to use Abstract type (abstraction) we can now use Mock to test.
