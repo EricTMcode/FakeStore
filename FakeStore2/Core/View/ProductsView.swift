@@ -9,39 +9,59 @@ import SwiftUI
 
 struct ProductsView: View {
     @State private var viewModel = ProductsViewModel()
+    @State private var searchText = ""
 
     var body: some View {
-        VStack {
-            switch viewModel.loadingState {
-            case .loading:
-                ProgressView()
-            case .empty:
-                ContentUnavailableView("No Products", systemImage: "cart.slash")
-            case .error(let error):
-                Text(error.localizedDescription)
-            case .completed(let products):
-                List {
-                    ForEach(products) { product in
-                        HStack(spacing: 16) {
-                            AsyncImage(url: URL(string: product.image))
-                                .scaledToFill()
-                                .frame(width: 80, height: 80)
-                                .clipShape(.rect(cornerRadius: 10))
+        NavigationStack {
+            VStack {
+                switch viewModel.loadingState {
+                case .loading:
+                    ProgressView()
+                case .empty:
+                    ContentUnavailableView("No Products", systemImage: "cart.slash")
+                case .error(let error):
+                    Text(error.localizedDescription)
+                case .completed:
+                    List {
+                        ForEach(filteredProducts) { product in
+                            HStack(spacing: 16) {
+                                AsyncImage(url: URL(string: product.image))
+                                    .scaledToFill()
+                                    .frame(width: 80, height: 80)
+                                    .clipShape(.rect(cornerRadius: 10))
 
-                            VStack(alignment: .leading) {
-                                Text(product.title)
+                                VStack(alignment: .leading) {
+                                    Text(product.title)
 
-                                Text(product.description)
-                                    .foregroundStyle(.gray)
-                                    .lineLimit(2)
+                                    Text(product.description)
+                                        .foregroundStyle(.gray)
+                                        .lineLimit(2)
+                                }
                             }
+                            .font(.subheadline)
                         }
-                        .font(.subheadline)
                     }
+                    .searchable(text: $searchText, prompt: "Search products...")
                 }
             }
+            .navigationTitle("Products")
+            .task { await viewModel.fetchProducts() }
         }
-        .task { await viewModel.fetchProducts() }
+    }
+}
+
+private extension ProductsView {
+    var filteredProducts: [Product] {
+        guard case .completed(let products) = viewModel.loadingState else { return [] }
+
+        if searchText.isEmpty {
+            return products
+        } else {
+            return products.filter { product in
+                product.title.localizedCaseInsensitiveContains(searchText) ||
+                product.description .localizedCaseInsensitiveContains(searchText)
+            }
+        }
     }
 }
 
