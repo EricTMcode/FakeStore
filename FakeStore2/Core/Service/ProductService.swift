@@ -9,6 +9,7 @@ import Foundation
 
 protocol ProductServiceProtocol {
     func fetchProducts() async throws -> [Product]
+    func refreshProducts() async throws -> [Product]
 }
 
 struct ProductService: ProductServiceProtocol {
@@ -21,9 +22,17 @@ struct ProductService: ProductServiceProtocol {
     func fetchProducts() async throws -> [Product] {
         return try await downloader.fetchData(as: Product.self)
     }
+
+    func refreshProducts() async throws -> [Product] {
+        return try await downloader.refreshData(as: Product.self)
+    }
 }
 
 struct MockProductService: ProductServiceProtocol {
+    func refreshProducts() async throws -> [Product] {
+        return Product.mockProducts
+    }
+    
     func fetchProducts() async throws -> [Product] {
         return Product.mockProducts
     }

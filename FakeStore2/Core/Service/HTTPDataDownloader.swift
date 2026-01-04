@@ -9,6 +9,7 @@ import Foundation
 
 protocol HTTPDataDownloaderProtocol {
     func fetchData<T: Codable>(as type: T.Type) async throws -> [T]
+    func refreshData<T: Codable>(as type: T.Type) async throws -> [T]
 }
 
 enum FakeStoreAPIEndpoint {
@@ -25,7 +26,7 @@ enum FakeStoreAPIEndpoint {
     }
 }
 
-struct HTTPDataDownloader: HTTPDataDownloaderProtocol {
+class HTTPDataDownloader: HTTPDataDownloaderProtocol {
     private let baseURL = "https://fakestoreapi.com"
     private let cache: CacheManager?
     private let endpoint: FakeStoreAPIEndpoint
@@ -63,11 +64,18 @@ struct HTTPDataDownloader: HTTPDataDownloaderProtocol {
         return result
     }
 
+    func refreshData<T: Codable>(as type: T.Type) async throws -> [T] {
+        print("DEBUG: Refreshing data...")
+        lastFetchedTime = nil
+        cache?.invalidate()
+        return try await fetchData(as: type)
+    }
+
     private func saveLastFetchedTime() {
         UserDefaults.standard.set(Date(), forKey: userDefaultLastFetchedTimeKey)
     }
 
-    private mutating func getLastFetchedTime() {
+    private func getLastFetchedTime() {
         self.lastFetchedTime = UserDefaults.standard.value(forKey: userDefaultLastFetchedTimeKey) as? Date
     }
 
