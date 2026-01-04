@@ -21,9 +21,9 @@ struct UsersView: View {
                     ContentUnavailableView("No Users Available", systemImage: "person.slash")
                 case .error(let error):
                     Text(error.localizedDescription)
-                case .completed(let users):
+                case .completed:
                     List {
-                        ForEach(users) { user in
+                        ForEach(filteredUsers) { user in
                             HStack(spacing: 16) {
                                 Text("\(user.id)")
 
@@ -37,10 +37,26 @@ struct UsersView: View {
                             .font(.subheadline)
                         }
                     }
+                    .searchable(text: $searchText, prompt: "Search for users...")
                 }
             }
             .navigationTitle("Users")
             .task { await viewModel.fetchUsers() }
+        }
+    }
+}
+
+private extension UsersView {
+    var filteredUsers: [User] {
+        guard case .completed(let users) = viewModel.loadingState else { return [] }
+
+        if searchText.isEmpty {
+            return users
+        } else {
+            return users.filter { user in
+                user.username.localizedCaseInsensitiveContains(searchText) ||
+                user.email.localizedCaseInsensitiveContains(searchText)
+            }
         }
     }
 }
