@@ -12,20 +12,6 @@ protocol HTTPDataDownloaderProtocol {
     func refreshData<T: Codable>(as type: T.Type) async throws -> [T]
 }
 
-enum FakeStoreAPIEndpoint {
-    case products
-    case users
-
-    var path: String {
-        switch self {
-        case .products:
-            return "/products"
-        case .users:
-            return "/users"
-        }
-    }
-}
-
 class HTTPDataDownloader: HTTPDataDownloaderProtocol {
     private let baseURL = "https://fakestoreapi.com"
     private let cache: CacheManager?
@@ -34,10 +20,16 @@ class HTTPDataDownloader: HTTPDataDownloaderProtocol {
     private let refreshInterval: TimeInterval = 60 * 10 // 10 minutes
     private let userDefaultLastFetchedTimeKey: String
 
+    private let urlBuilder: URLBuilder
+    private let responseValidator: HTTPResponseValidator
+
     init(endpoint: FakeStoreAPIEndpoint, cache: CacheManager? = nil) {
         self.endpoint = endpoint
         self.cache = cache
         self.userDefaultLastFetchedTimeKey = endpoint.path
+
+        self.urlBuilder = URLBuilder(baseURL: baseURL, endpoint: endpoint)
+        self.responseValidator = HTTPResponseValidator()
 
         getLastFetchedTime()
     }
@@ -50,9 +42,9 @@ class HTTPDataDownloader: HTTPDataDownloaderProtocol {
 
         print("DEBUG: Getting data from API...")
 
-        let url = try buildURL()
+        let url = try urlBuilder.buildURL()
         let (data, response) = try await URLSession.shared.data(from: url)
-        try validataResponse(response)
+        try responseValidator.validateResponse(response)
 
         let result = try JSONDecoder().decode([T].self, from: data)
 
@@ -85,23 +77,5 @@ class HTTPDataDownloader: HTTPDataDownloaderProtocol {
         print("DEBUG: Time since \(Date().timeIntervalSince(lastFetchedTime))")
         return Date().timeIntervalSince(lastFetchedTime) >= refreshInterval
     }
-
-    private func buildURL() throws -> URL {
-        guard var components = URLComponents(string: baseURL) else { throw APIError.invalidURL }
-        components.path = endpoint.path
-
-        guard let url = components.url else { throw APIError.invalidURL }
-
-        return url
-    }
-
-    private func validataResponse(_ response: URLResponse) throws {
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw APIError.invalidResponse
-        }
-
-        guard httpResponse.statusCode == 200 else {
-            throw APIError.invalidResponse
-        }
-    }
 }
+
