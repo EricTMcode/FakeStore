@@ -9,6 +9,7 @@ import Foundation
 
 protocol UserServiceProtocol {
     func fetchUsers() async throws -> [User]
+    func refreshUsers() async throws -> [User]
 }
 
 struct UserService: UserServiceProtocol {
@@ -22,9 +23,17 @@ struct UserService: UserServiceProtocol {
         return try await downloader.fetchData(as: User.self)
     }
 
+    func refreshUsers() async throws -> [User] {
+        return try await downloader.refreshData(as: User.self)
+    }
+
 }
 
 struct MockUserService: UserServiceProtocol {
+    func refreshUsers() async throws -> [User] {
+        return User.mockUsers
+    }
+    
     func fetchUsers() async throws -> [User] {
         return User.mockUsers
     }
