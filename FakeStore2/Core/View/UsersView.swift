@@ -49,12 +49,10 @@ struct UsersView: View {
 
 private extension UsersView {
     var filteredUsers: [User] {
-        guard case .completed(let users) = viewModel.loadingState else { return [] }
-
         if searchText.isEmpty {
-            return users
+            return viewModel.users
         } else {
-            return users.filter { user in
+            return viewModel.users.filter { user in
                 user.username.localizedCaseInsensitiveContains(searchText) ||
                 user.email.localizedCaseInsensitiveContains(searchText)
             }

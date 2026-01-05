@@ -16,6 +16,9 @@ struct ProductsViewModelTests {
         let viewModel = ProductsViewModel(service: service)
 
         await viewModel.fetchProducts()
+
+        #expect(viewModel.products.count == Product.mockProducts.count)
+        #expect(viewModel.loadingState == .completed)
     }
 
 
