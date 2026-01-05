@@ -33,4 +33,16 @@ struct ProductsViewModelTests {
         #expect(viewModel.loadingState == .empty)
     }
 
+    @Test func testFetchProductsFailure() async {
+        var service = MockProductService()
+        let error = APIError.invalidData
+        service.errorToThrow = error
+        let viewModel = ProductsViewModel(service: service)
+
+        await viewModel.fetchProducts()
+
+        #expect(viewModel.products.isEmpty)
+        #expect(viewModel.loadingState == . error(error: error))
+    }
+
 }
