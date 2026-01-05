@@ -55,4 +55,17 @@ struct ProductsViewModelTests {
         #expect(viewModel.loadingState == .completed)
     }
 
+    @Test func testRefreshProductsFailure() async {
+        var service = MockProductService()
+        let error = APIError.invalidURL
+        service.errorToThrow = error
+
+        let viewModel = ProductsViewModel(service: service)
+
+        await viewModel.refreshProducts()
+
+        #expect(viewModel.products.isEmpty)
+        #expect(viewModel.loadingState == .error(error: error))
+    }
+
 }
