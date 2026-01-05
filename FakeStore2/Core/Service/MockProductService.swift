@@ -8,11 +8,13 @@
 import Foundation
 
 struct MockProductService: ProductServiceProtocol {
+    var mockProducts = Product.mockProducts
+
     func refreshProducts() async throws -> [Product] {
-        return Product.mockProducts
+        return mockProducts
     }
     
     func fetchProducts() async throws -> [Product] {
-        return Product.mockProducts
+        return mockProducts
     }
 }

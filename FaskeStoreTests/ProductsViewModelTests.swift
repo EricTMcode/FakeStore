@@ -22,4 +22,15 @@ struct ProductsViewModelTests {
     }
 
 
+    @Test func testFetchProductsEmptyState() async {
+        var service = MockProductService()
+        service.mockProducts = []
+        let viewModel = ProductsViewModel(service: service)
+
+        await viewModel.fetchProducts()
+
+        #expect(viewModel.products.isEmpty)
+        #expect(viewModel.loadingState == .empty)
+    }
+
 }
