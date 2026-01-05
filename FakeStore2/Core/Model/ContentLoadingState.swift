@@ -7,9 +7,9 @@
 
 import Foundation
 
-enum ContentLoadingState<T: Codable> {
+enum ContentLoadingState {
     case loading
     case empty
     case error(error: Error)
-    case completed(data: [T])
+    case completed
 }

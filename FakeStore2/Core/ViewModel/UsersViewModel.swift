@@ -9,7 +9,8 @@ import Foundation
 
 @Observable
 class UsersViewModel {
-    var loadingState: ContentLoadingState<User> = .loading
+    var users = [User]()
+    var loadingState: ContentLoadingState = .loading
     private let service: UserServiceProtocol
 
     init(service: UserServiceProtocol = UserService()) {
@@ -18,8 +19,8 @@ class UsersViewModel {
 
     func fetchUsers() async {
         do {
-            let users = try await service.fetchUsers()
-            self.loadingState = users.isEmpty ? .empty : .completed(data: users)
+            self.users = try await service.fetchUsers()
+            self.loadingState = users.isEmpty ? .empty : .completed
         } catch {
             self.loadingState = .error(error: error)
         }
@@ -27,8 +28,8 @@ class UsersViewModel {
 
     func refreshUsers() async {
         do {
-            let users = try await service.refreshUsers()
-            self.loadingState = users.isEmpty ? .empty : .completed(data: users)
+            self.users = try await service.refreshUsers()
+            self.loadingState = users.isEmpty ? .empty : .completed
         } catch {
             self.loadingState = .error(error: error)
         }

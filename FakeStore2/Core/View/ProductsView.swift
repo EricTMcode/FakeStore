@@ -53,12 +53,10 @@ struct ProductsView: View {
 
 private extension ProductsView {
     var filteredProducts: [Product] {
-        guard case .completed(let products) = viewModel.loadingState else { return [] }
-
         if searchText.isEmpty {
-            return products
+            return viewModel.products
         } else {
-            return products.filter { product in
+            return viewModel.products.filter { product in
                 product.title.localizedCaseInsensitiveContains(searchText) ||
                 product.description .localizedCaseInsensitiveContains(searchText)
             }
