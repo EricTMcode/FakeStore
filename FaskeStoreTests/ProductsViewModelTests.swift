@@ -67,5 +67,4 @@ struct ProductsViewModelTests {
         #expect(viewModel.products.isEmpty)
         #expect(viewModel.loadingState == .error(error: error))
     }
-
 }

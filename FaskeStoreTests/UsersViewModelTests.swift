@@ -32,4 +32,38 @@ struct UsersViewModelTests {
         #expect(viewModel.loadingState == .empty)
     }
 
+    @Test func testFetchUsersFailure() async {
+        var service = MockUserService()
+        let error = APIError.invalidData
+        service.errorToThrow = error
+        let viewModel = UsersViewModel(service: service)
+
+        await viewModel.fetchUsers()
+
+        #expect(viewModel.users.isEmpty)
+        #expect(viewModel.loadingState == .error(error: error))
+    }
+
+    @Test func testRefreshUsersSuccess() async {
+        let service = MockUserService()
+        let viewModel = UsersViewModel(service: service)
+
+        await viewModel.fetchUsers()
+
+        #expect(viewModel.users.count == User.mockUsers.count)
+        #expect(viewModel.loadingState == .completed)
+    }
+
+    @Test func testRefreshUsersFailure() async {
+        var service = MockUserService()
+        let error = APIError.invalidURL
+        service.errorToThrow = error
+
+        let viewModel = UsersViewModel(service: service)
+
+        await viewModel.refreshUsers()
+
+        #expect(viewModel.users.isEmpty)
+        #expect(viewModel.loadingState == .error(error: error))
+    }
 }
